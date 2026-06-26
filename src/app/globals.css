@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-luxe-in: cubic-bezier(0.62, 0, 0.36, 1);
+    --nav-h: 88px;
+    color-scheme: light;
+  }
+
+  * {
+    @apply border-stone/40;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: auto; /* Lenis owns smooth scrolling */
+  }
+
+  body {
+    @apply bg-cream text-graphite font-sans antialiased;
+    font-feature-settings: "ss01", "cv01", "kern";
+    overflow-x: hidden;
+  }
+
+  /* Lenis */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background-color: #e3cdb0;
+    color: #1a1815;
+  }
+
+  /* Refined scrollbar */
+  ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1eadf;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c9bba8;
+    border-radius: 999px;
+    border: 2px solid #f1eadf;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a99a86;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif;
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* ── Glassmorphism ─────────────────────────────────────────── */
+  .glass {
+    background: rgba(253, 252, 250, 0.6);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+  }
+  .glass-dark {
+    background: rgba(26, 24, 21, 0.55);
+    backdrop-filter: blur(22px) saturate(130%);
+    -webkit-backdrop-filter: blur(22px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* ── Gold foil text ────────────────────────────────────────── */
+  .text-gold-foil {
+    background: linear-gradient(
+      105deg,
+      #6f4f2c 0%,
+      #9a743f 30%,
+      #c39a5e 48%,
+      #8c6a41 66%,
+      #6f4f2c 100%
+    );
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Brighter foil for use on dark / ink backgrounds */
+  .text-gold-foil-light {
+    background: linear-gradient(
+      105deg,
+      #c9a574 0%,
+      #e8d3ad 35%,
+      #f3e6c8 50%,
+      #d9be96 68%,
+      #c9a574 100%
+    );
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Hairline divider */
+  .hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(176, 138, 91, 0.5), transparent);
+  }
+
+  /* Underline reveal for nav links */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.55s var(--ease-luxe);
+  }
+  .link-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Editorial uppercase label */
+  .eyebrow {
+    @apply font-sans text-[0.7rem] uppercase tracking-luxe text-gold-deep;
+  }
+
+  /* Film grain overlay — applied to an absolutely-positioned element */
+  .grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Hide default cursor when the custom cursor is active (desktop, fine pointer) */
+  @media (hover: hover) and (pointer: fine) {
+    .cursor-none-desktop,
+    .cursor-none-desktop * {
+      cursor: none;
+    }
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+    mask-image: linear-gradient(180deg, #000 70%, transparent);
+  }
+
+  .perspective {
+    perspective: 1400px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
