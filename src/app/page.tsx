@@ -5,7 +5,7 @@ import { ExperienceSelector } from "@/features/home/experience-selector";
 import { Services } from "@/features/home/services";
 import { Specialists } from "@/features/home/specialists";
 import { BeforeAfter } from "@/features/home/before-after";
-import { Testimonials } from "@/features/home/testimonials";
+import { Reviews } from "@/features/home/reviews";
 import { Interior } from "@/features/home/interior";
 import { InstagramFeed } from "@/features/home/instagram";
 import { Contact } from "@/features/home/contact";
@@ -20,7 +20,7 @@ export default function HomePage() {
       <Services />
       <Specialists />
       <BeforeAfter />
-      <Testimonials />
+      <Reviews />
       <Interior />
       <InstagramFeed />
       <Contact />

@@ -34,9 +34,9 @@ export function BrandStory() {
             delay={0.2}
             className="glass absolute -bottom-8 -right-2 w-52 rounded-3xl p-5 shadow-luxe sm:right-6 lg:-right-6"
           >
-            <p className="font-serif text-5xl font-light text-graphite">12+</p>
+            <p className="font-serif text-5xl font-light text-graphite">28+</p>
             <p className="mt-1 text-[0.7rem] uppercase tracking-wide2 text-taupe">
-              Years perfecting the craft of beauty
+              Years of beauty excellence since 1998
             </p>
           </Reveal>
 
@@ -58,11 +58,11 @@ export function BrandStory() {
 
           <Reveal delay={0.1} className="mt-7 space-y-5 text-pretty leading-relaxed text-charcoal/80">
             <p>
-              The Beauty Room began with a single conviction: that beauty is not
-              about transformation, but revelation. Founded by {siteConfig.founder},
-              a master artist with over a decade behind the chair and in the
-              treatment room, it has become Ratnapura&apos;s quietly-celebrated address
-              for those who expect more.
+              Established in 1998, The Beauty Room began with a single conviction:
+              that beauty is not about transformation, but revelation. Founded by{" "}
+              {siteConfig.founder}, a master artist with over 28 years behind the
+              chair and in the treatment room, it has become Ratnapura&apos;s
+              quietly-celebrated address for those who expect more.
             </p>
             <p>
               Under one roof we bring together a fashion-led hair &amp; bridal salon

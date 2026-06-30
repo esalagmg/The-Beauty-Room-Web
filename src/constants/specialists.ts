@@ -7,7 +7,7 @@ export const specialists: Specialist[] = [
     name: "Nilu",
     role: "Founder & Lead Artist",
     division: "both",
-    experience: "12+ years",
+    experience: "28+ years",
     bio: "The founding eye and the hands behind The Beauty Room. Nilu blends couture hair and bridal artistry with clinical skin science, personally leading every signature look and treatment protocol.",
     expertise: [
       "Bridal Direction",

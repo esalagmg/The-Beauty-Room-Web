@@ -182,7 +182,7 @@ export function Hero() {
                 ))}
               </div>
               <p className="mt-1 text-[0.7rem] uppercase tracking-wide2 text-taupe">
-                4.9 · 8,000+ clients styled
+                {siteConfig.experienceLabel}
               </p>
             </div>
           </motion.div>
@@ -234,7 +234,7 @@ export function Hero() {
                 </defs>
                 <text className="fill-graphite/70 font-sans text-[8.5px] uppercase tracking-[0.32em]">
                   <textPath href="#seal">
-                    Est. 2013 · Quiet Luxury · The Beauty Room ·
+                    Est. 1998 · Quiet Luxury · The Beauty Room ·
                   </textPath>
                 </text>
               </svg>

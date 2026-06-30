@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { fontVariables } from "@/lib/fonts";
 import { siteConfig } from "@/constants/site";
+import { getLocalBusinessSchema } from "@/lib/structured-data";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { CustomCursor } from "@/components/providers/custom-cursor";
 import { LuxuryLoader } from "@/components/layout/luxury-loader";
@@ -51,6 +52,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={fontVariables}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(getLocalBusinessSchema()),
+          }}
+        />
+      </head>
       <body className="overflow-x-hidden bg-cream antialiased">
         <LuxuryLoader />
         <CustomCursor />

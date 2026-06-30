@@ -1,19 +1,15 @@
 /**
- * Central image manifest.
+ * Central image manifest — authentic photography only.
  *
- * `brand.*`  — real photography from The Beauty Room (served locally).
- * `u(...)`   — curated luxury imagery from Unsplash; every <SmartImage>
- *              falls back to an on-brand gradient if a remote URL ever fails,
- *              so the layout never breaks.
+ * Every image below is a real photo from The Beauty Room (served locally from
+ * /public/images/brand). No stock or AI imagery is used.
+ *
+ * The project currently ships 9 brand photos, so some editorial "slots" reuse
+ * the closest-matching photo. When you add more real photos (see the suggested
+ * filenames in `futureSlots` below), drop them into /public/images/brand and
+ * point the relevant slot here — components only consume `img.*`, so it's a
+ * one-line change with no component edits.
  */
-
-const U = "https://images.unsplash.com/photo-";
-const q = "?auto=format&fit=crop&w=1400&q=80";
-
-/** Build an Unsplash URL with an optional width override. */
-export function u(id: string, w = 1400) {
-  return `${U}${id}?auto=format&fit=crop&w=${w}&q=80`;
-}
 
 export const brand = {
   logo: "/images/brand/logo.jpeg",
@@ -27,51 +23,62 @@ export const brand = {
   clinicFacial: "/images/brand/clinic-facial.jpeg",
 } as const;
 
+/**
+ * Suggested additional photos to make the experience even richer. Add the file
+ * to /public/images/brand, then replace the matching value in `img` below.
+ */
+export const futureSlots = {
+  salonExterior: "salon-exterior.jpeg",
+  reception: "reception.jpeg",
+  hairStation: "hair-station.jpeg",
+  treatmentRoom: "treatment-room.jpeg",
+  productShelf: "products.jpeg",
+  loungeArea: "lounge.jpeg",
+} as const;
+
 export const img = {
   // ── Hero / atmosphere ──────────────────────────────────────
   heroSalon: brand.bridalRoses,
   heroHair: brand.hairBlowout,
-  heroClinic: u("1570172619644-dfd03ed5d881"),
+  heroClinic: brand.clinicFacial,
 
   // ── Salon imagery ──────────────────────────────────────────
-  salonColor: u("1560066984-138dadb4c035"),
-  salonCut: u("1522337360788-8b13dee7a37e"),
+  salonColor: brand.hairBlowout,
+  salonCut: brand.hairSleek,
   salonStyling: brand.hairSleek,
   salonBridal: brand.bridalArch,
-  makeupEditorial: u("1487412947147-5cebf100ffc2"),
-  makeupDetail: u("1457972729786-0411a3b2b626"),
-  nails: u("1604654894610-df63bc536371"),
+  makeupEditorial: brand.bridalRoses,
+  makeupDetail: brand.bridalForest,
+  nails: brand.bridalSaree,
 
   // ── Aesthetic clinic imagery ───────────────────────────────
-  clinicSkin: u("1596462502278-27bfdc403348"),
+  clinicSkin: brand.clinicFacial,
   clinicFacial: brand.clinicFacial,
-  clinicTreatment: u("1620331311520-246422fd82f9"),
-  clinicProducts: u("1633681926022-84c23e8cb2d6"),
-  clinicGlow: u("1516975080664-ed2fc6a32937"),
+  clinicTreatment: brand.founder,
+  clinicProducts: brand.bridalForest,
+  clinicGlow: brand.clinicFacial,
 
-  // ── Interior ───────────────────────────────────────────────
-  interiorReception: u("1633681926035-ec1ac984418a"),
-  interiorLounge: u("1522335789203-aabd1fc54bc9"),
-  interiorRoom: u("1540555700478-4be289fbecef"),
-  interiorSpa: u("1512496015851-a90fb38ba796"),
-  interiorProducts: u("1556228720-195a672e8a03"),
+  // ── Interior (real spaces visible in our photography) ──────
+  interiorReception: brand.founder,
+  interiorLounge: brand.hairBlowout,
+  interiorRoom: brand.clinicFacial,
+  interiorSpa: brand.hairSleek,
+  interiorProducts: brand.hairSleek,
 
   // ── Misc ───────────────────────────────────────────────────
-  texture: u("1615874959474-d609969a20ed"),
+  texture: brand.bridalForest,
 } as const;
 
-/** Instagram-style feed (reuses curated imagery). */
+/** Instagram-style feed — all authentic photography. */
 export const instagramFeed = [
   brand.bridalRoses,
-  img.salonColor,
   brand.hairSleek,
   brand.clinicFacial,
-  brand.bridalSaree,
-  img.makeupEditorial,
-  brand.bridalForest,
-  img.clinicSkin,
+  brand.bridalArch,
   brand.hairBlowout,
-  img.nails,
+  brand.bridalForest,
+  brand.founder,
+  brand.bridalSaree,
+  brand.bridalRoses,
+  brand.clinicFacial,
 ] as const;
-
-export { q };

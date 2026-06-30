@@ -9,13 +9,18 @@ export const galleryCategories = [
   "Makeup",
 ] as const;
 
+/**
+ * Featured work. Each item is a draggable before/after of authentic brand
+ * photography. For genuine client transformations, replace `before`/`after`
+ * with matched photo pairs (same client, before & after) in /public/images.
+ */
 export const gallery: GalleryItem[] = [
   {
     id: "g1",
     category: "Bridal",
     division: "salon",
     title: "Garden Bridal",
-    before: img.makeupDetail,
+    before: brand.bridalSaree,
     after: brand.bridalArch,
   },
   {
@@ -23,23 +28,23 @@ export const gallery: GalleryItem[] = [
     category: "Hair",
     division: "salon",
     title: "Dimensional Colour",
-    before: img.salonCut,
-    after: brand.hairBlowout,
+    before: brand.hairBlowout,
+    after: brand.hairSleek,
   },
   {
     id: "g3",
     category: "Skin",
     division: "clinic",
-    title: "HydraGlow Transformation",
-    before: img.clinicTreatment,
-    after: img.clinicSkin,
+    title: "Radiant Skin",
+    before: brand.clinicFacial,
+    after: brand.bridalForest,
   },
   {
     id: "g4",
     category: "Makeup",
     division: "salon",
     title: "Soft Editorial Glam",
-    before: img.makeupDetail,
+    before: brand.bridalForest,
     after: brand.bridalRoses,
   },
   {
@@ -47,16 +52,16 @@ export const gallery: GalleryItem[] = [
     category: "Hair",
     division: "salon",
     title: "Sleek & Smooth",
-    before: img.salonColor,
-    after: brand.hairSleek,
+    before: brand.hairSleek,
+    after: brand.hairBlowout,
   },
   {
     id: "g6",
     category: "Skin",
     division: "clinic",
-    title: "Resurfacing Glow",
-    before: img.clinicProducts,
-    after: img.clinicGlow,
+    title: "Bridal Glow",
+    before: brand.bridalRoses,
+    after: brand.clinicFacial,
   },
 ];
 
