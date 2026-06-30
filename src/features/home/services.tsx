@@ -9,10 +9,15 @@ import { Reveal } from "@/components/ui/reveal";
 import { SmartImage } from "@/components/ui/smart-image";
 import { Parallax } from "@/components/ui/parallax";
 import { serviceCategories } from "@/constants/services";
+import type { ServiceCategory } from "@/types";
 import { pad } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-export function Services() {
+export function Services({
+  categories = serviceCategories,
+}: {
+  categories?: ServiceCategory[];
+}) {
   return (
     <Section id="services" tone="cream">
       {/* header */}
@@ -36,7 +41,7 @@ export function Services() {
 
       {/* alternating editorial rows */}
       <div className="mt-20 space-y-24 md:space-y-32">
-        {serviceCategories.map((cat, i) => {
+        {categories.map((cat, i) => {
           const reversed = i % 2 === 1;
           return (
             <div

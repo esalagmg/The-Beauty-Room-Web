@@ -13,11 +13,22 @@ import { Magnetic } from "@/components/ui/magnetic";
 import { serviceCategories } from "@/constants/services";
 import { specialistsFor } from "@/constants/specialists";
 import type { DivisionContent } from "@/constants/divisions";
+import type { ServiceCategory, Specialist } from "@/types";
 import { pad } from "@/lib/utils";
 
-export function DivisionExperience({ content }: { content: DivisionContent }) {
-  const categories = serviceCategories.filter((c) => c.division === content.division);
-  const artist = specialistsFor(content.division)[0];
+export function DivisionExperience({
+  content,
+  categories: categoriesProp,
+  artist: artistProp,
+}: {
+  content: DivisionContent;
+  categories?: ServiceCategory[];
+  artist?: Specialist;
+}) {
+  const categories =
+    categoriesProp ??
+    serviceCategories.filter((c) => c.division === content.division);
+  const artist = artistProp ?? specialistsFor(content.division)[0];
 
   return (
     <>

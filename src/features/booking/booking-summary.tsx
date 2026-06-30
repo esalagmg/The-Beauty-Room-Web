@@ -2,10 +2,9 @@
 
 import { Calendar, Clock, Scissors, Sparkles, Tag, User } from "lucide-react";
 import { SmartImage } from "@/components/ui/smart-image";
-import { getCategory, getService } from "@/constants/services";
-import { getSpecialist } from "@/constants/specialists";
+import { findCategory, findService, findSpecialist } from "./resolve";
 import { brand } from "@/constants/images";
-import type { BookingState } from "@/types";
+import type { BookingState, ServiceCategory, Specialist } from "@/types";
 import { cn } from "@/lib/utils";
 
 function formatDate(iso: string | null) {
@@ -19,14 +18,18 @@ function formatDate(iso: string | null) {
 
 export function BookingSummary({
   state,
+  categories,
+  specialists,
   className,
 }: {
   state: BookingState;
+  categories: ServiceCategory[];
+  specialists: Specialist[];
   className?: string;
 }) {
-  const category = getCategory(state.categoryId);
-  const service = getService(state.categoryId, state.serviceId);
-  const specialist = getSpecialist(state.specialistId);
+  const category = findCategory(categories, state.categoryId);
+  const service = findService(categories, state.categoryId, state.serviceId);
+  const specialist = findSpecialist(specialists, state.specialistId);
 
   const rows = [
     {

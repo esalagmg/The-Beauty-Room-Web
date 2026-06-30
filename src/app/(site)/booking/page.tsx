@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BookingWizard } from "@/features/booking/booking-wizard";
+import { getServiceCategories, getSpecialists } from "@/lib/data/catalog";
+
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: "Book an Appointment",
@@ -10,7 +13,12 @@ export const metadata: Metadata = {
     "Reserve your salon or aesthetic clinic appointment at The Beauty Room by Nilu, a calm and considered booking experience.",
 };
 
-export default function BookingPage() {
+export default async function BookingPage() {
+  const [categories, specialists] = await Promise.all([
+    getServiceCategories(),
+    getSpecialists(),
+  ]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-pearl-gradient pb-28 pt-28 lg:pt-32">
       <div className="pointer-events-none absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-champagne/30 blur-[130px]" />
@@ -32,7 +40,10 @@ export default function BookingPage() {
               </div>
             }
           >
-            <BookingWizard />
+            <BookingWizard
+              allCategories={categories}
+              allSpecialists={specialists}
+            />
           </Suspense>
         </div>
       </div>

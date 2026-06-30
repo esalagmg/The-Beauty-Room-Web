@@ -8,10 +8,11 @@ import { Parallax } from "@/components/ui/parallax";
 import { SmartImage } from "@/components/ui/smart-image";
 import { Button } from "@/components/ui/button";
 import { specialists } from "@/constants/specialists";
+import type { Specialist } from "@/types";
 import { siteConfig } from "@/constants/site";
 
-export function Specialists() {
-  const nilu = specialists[0];
+export function Specialists({ specialist }: { specialist?: Specialist }) {
+  const nilu = specialist ?? specialists[0];
 
   return (
     <Section id="specialists" tone="pearl" className="overflow-hidden">

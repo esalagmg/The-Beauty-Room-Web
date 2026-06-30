@@ -9,21 +9,21 @@ import {
   ArrowRight,
   Check,
   Clock,
+  MessageCircle,
   Scissors,
   Sparkles,
   Star,
 } from "lucide-react";
+import { siteConfig } from "@/constants/site";
 import { SmartImage } from "@/components/ui/smart-image";
 import { Calendar, TIME_SLOTS } from "./calendar";
 import { BookingSummary } from "./booking-summary";
-import {
-  getCategory,
-  getService,
-  serviceCategories,
-} from "@/constants/services";
-import { specialistsFor } from "@/constants/specialists";
+import { findCategory, findService, specialistsForDivision } from "./resolve";
+import { submitBooking } from "./actions";
+import { serviceCategories } from "@/constants/services";
+import { specialists as staticSpecialists } from "@/constants/specialists";
 import { brand, img } from "@/constants/images";
-import type { BookingState, Division } from "@/types";
+import type { BookingState, Division, ServiceCategory, Specialist } from "@/types";
 import { cn, pad } from "@/lib/utils";
 
 const STEPS = [
@@ -50,7 +50,13 @@ const EMPTY: BookingState = {
   notes: "",
 };
 
-export function BookingWizard() {
+export function BookingWizard({
+  allCategories = serviceCategories,
+  allSpecialists = staticSpecialists,
+}: {
+  allCategories?: ServiceCategory[];
+  allSpecialists?: Specialist[];
+}) {
   const params = useSearchParams();
 
   const [state, setState] = useState<BookingState>(() => ({
@@ -65,18 +71,50 @@ export function BookingWizard() {
   const [index, setIndex] = useState(() => (params.get("division") ? 1 : 0));
   const [dir, setDir] = useState(1);
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [bookingRef, setBookingRef] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const set = (patch: Partial<BookingState>) => setState((s) => ({ ...s, ...patch }));
 
+  const handleConfirm = async () => {
+    if (!state.division || !state.serviceId || !state.date || !state.time) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    const res = await submitBooking({
+      division: state.division,
+      treatmentId: state.serviceId,
+      specialistId: state.specialistId,
+      date: state.date,
+      time: state.time,
+      firstName: state.firstName,
+      lastName: state.lastName,
+      email: state.email,
+      phone: state.phone,
+      notes: state.notes,
+    });
+    setSubmitting(false);
+    if (res.ok) {
+      setBookingRef(res.reference);
+      setDone(true);
+    } else {
+      setSubmitError(res.message);
+      if (res.reason === "slot_taken") {
+        setDir(-1);
+        setIndex(4); // back to date & time
+      }
+    }
+  };
+
   const categories = useMemo(
-    () => serviceCategories.filter((c) => c.division === state.division),
-    [state.division],
+    () => allCategories.filter((c) => c.division === state.division),
+    [allCategories, state.division],
   );
-  const category = getCategory(state.categoryId);
-  const service = getService(state.categoryId, state.serviceId);
+  const category = findCategory(allCategories, state.categoryId);
+  const service = findService(allCategories, state.categoryId, state.serviceId);
   const specialists = useMemo(
-    () => (state.division ? specialistsFor(state.division) : []),
-    [state.division],
+    () => specialistsForDivision(allSpecialists, state.division),
+    [allSpecialists, state.division],
   );
 
   const step = STEPS[index];
@@ -118,7 +156,14 @@ export function BookingWizard() {
 
   const progress = ((index + 1) / STEPS.length) * 100;
 
-  if (done) return <SuccessScreen state={state} />;
+  if (done)
+    return (
+      <SuccessScreen
+        state={state}
+        categories={allCategories}
+        reference={bookingRef}
+      />
+    );
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_360px] lg:gap-14">
@@ -427,17 +472,27 @@ export function BookingWizard() {
               )}
 
               {step.id === "confirm" && (
-                <ConfirmReview state={state} onEdit={(i) => jumpTo(i)} />
+                <ConfirmReview
+                  state={state}
+                  categories={allCategories}
+                  onEdit={(i) => jumpTo(i)}
+                />
               )}
             </motion.div>
           </AnimatePresence>
         </div>
 
+        {submitError && (
+          <p className="mt-6 rounded-2xl border border-gold/40 bg-gold/10 px-5 py-3 text-center font-sans text-sm text-gold-deep">
+            {submitError}
+          </p>
+        )}
+
         {/* nav */}
         <div className="mt-12 flex items-center justify-between">
           <button
             onClick={() => go(-1)}
-            disabled={index === 0}
+            disabled={index === 0 || submitting}
             className="inline-flex items-center gap-2 font-sans text-[0.7rem] uppercase tracking-luxe text-graphite transition-opacity disabled:pointer-events-none disabled:opacity-0"
           >
             <ArrowLeft className="h-4 w-4" /> Back
@@ -454,10 +509,11 @@ export function BookingWizard() {
             </button>
           ) : (
             <button
-              onClick={() => setDone(true)}
-              className="group inline-flex items-center gap-2.5 rounded-full bg-gold px-8 py-4 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-all duration-500 hover:bg-gold-deep"
+              onClick={handleConfirm}
+              disabled={submitting}
+              className="group inline-flex items-center gap-2.5 rounded-full bg-gold px-8 py-4 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-all duration-500 hover:bg-gold-deep disabled:opacity-60"
             >
-              Confirm booking
+              {submitting ? "Confirming…" : "Confirm booking"}
               <Check className="h-4 w-4" />
             </button>
           )}
@@ -466,7 +522,11 @@ export function BookingWizard() {
 
       {/* ── Floating summary ──────────────────────────────────── */}
       <div className="lg:sticky lg:top-28 lg:self-start">
-        <BookingSummary state={state} />
+        <BookingSummary
+          state={state}
+          categories={allCategories}
+          specialists={allSpecialists}
+        />
       </div>
     </div>
   );
@@ -546,13 +606,15 @@ function Field({
 
 function ConfirmReview({
   state,
+  categories,
   onEdit,
 }: {
   state: BookingState;
+  categories: ServiceCategory[];
   onEdit: (i: number) => void;
 }) {
-  const category = getCategory(state.categoryId);
-  const service = getService(state.categoryId, state.serviceId);
+  const category = findCategory(categories, state.categoryId);
+  const service = findService(categories, state.categoryId, state.serviceId);
   const dateStr = state.date
     ? new Date(state.date).toLocaleDateString("en-GB", {
         weekday: "long",
@@ -606,8 +668,16 @@ function ConfirmReview({
   );
 }
 
-function SuccessScreen({ state }: { state: BookingState }) {
-  const service = getService(state.categoryId, state.serviceId);
+function SuccessScreen({
+  state,
+  categories,
+  reference,
+}: {
+  state: BookingState;
+  categories: ServiceCategory[];
+  reference: string | null;
+}) {
+  const service = findService(categories, state.categoryId, state.serviceId);
   const dateStr = state.date
     ? new Date(state.date).toLocaleDateString("en-GB", {
         weekday: "long",
@@ -632,26 +702,33 @@ function SuccessScreen({ state }: { state: BookingState }) {
         <Check className="h-9 w-9" />
       </motion.div>
       <h1 className="mt-8 font-serif text-display-sm font-light text-graphite">
-        You&apos;re <span className="italic text-gold-foil">booked in</span>
+        Request <span className="italic text-gold-foil">received</span>
       </h1>
       <p className="mt-4 text-pretty text-charcoal/75">
-        Thank you, {state.firstName || "lovely"}. We&apos;ve reserved{" "}
-        <span className="font-medium text-graphite">{service?.name}</span>
-        {dateStr && ` for ${dateStr} at ${state.time}`}. A confirmation is on its
-        way to {state.email || "your inbox"}.
+        Thank you, {state.firstName || "lovely"}. We&apos;ve received your request
+        for <span className="font-medium text-graphite">{service?.name}</span>
+        {dateStr && ` on ${dateStr} at ${state.time}`}. We&apos;ll confirm your
+        appointment shortly on WhatsApp.
       </p>
+      {reference && (
+        <p className="mt-4 inline-block rounded-full border border-stone/50 bg-white/60 px-5 py-2 font-sans text-[0.7rem] uppercase tracking-wide2 text-taupe">
+          Reference · <span className="text-graphite">{reference}</span>
+        </p>
+      )}
       <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a
+          href={siteConfig.contact.whatsappHref}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-center gap-2 rounded-full bg-graphite px-8 py-4 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-colors hover:bg-ink"
+        >
+          <MessageCircle className="h-4 w-4" /> Message us on WhatsApp
+        </a>
         <Link
           href="/"
-          className="rounded-full bg-graphite px-8 py-4 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-colors hover:bg-ink"
-        >
-          Back to home
-        </Link>
-        <Link
-          href="/#gallery"
           className="rounded-full border border-graphite/30 px-8 py-4 font-sans text-[0.72rem] uppercase tracking-luxe text-graphite transition-colors hover:border-graphite"
         >
-          Explore the gallery
+          Back to home
         </Link>
       </div>
     </motion.div>

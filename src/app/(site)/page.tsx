@@ -9,16 +9,25 @@ import { Reviews } from "@/features/home/reviews";
 import { Interior } from "@/features/home/interior";
 import { InstagramFeed } from "@/features/home/instagram";
 import { Contact } from "@/features/home/contact";
+import { getServiceCategories, getSpecialists } from "@/lib/data/catalog";
 
-export default function HomePage() {
+// Revalidate the static page periodically so catalog edits appear automatically.
+export const revalidate = 120;
+
+export default async function HomePage() {
+  const [categories, specialists] = await Promise.all([
+    getServiceCategories(),
+    getSpecialists(),
+  ]);
+
   return (
     <>
       <Hero />
       <PillarsBand />
       <BrandStory />
       <ExperienceSelector />
-      <Services />
-      <Specialists />
+      <Services categories={categories} />
+      <Specialists specialist={specialists[0]} />
       <BeforeAfter />
       <Reviews />
       <Interior />

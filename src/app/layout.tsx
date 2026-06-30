@@ -2,12 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { fontVariables } from "@/lib/fonts";
 import { siteConfig } from "@/constants/site";
 import { getLocalBusinessSchema } from "@/lib/structured-data";
-import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
-import { CustomCursor } from "@/components/providers/custom-cursor";
-import { LuxuryLoader } from "@/components/layout/luxury-loader";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
-import { MobileBookingBar } from "@/components/layout/mobile-booking-bar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -60,16 +54,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="overflow-x-hidden bg-cream antialiased">
-        <LuxuryLoader />
-        <CustomCursor />
-        <SmoothScrollProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-          <MobileBookingBar />
-        </SmoothScrollProvider>
-      </body>
+      <body className="overflow-x-hidden bg-cream antialiased">{children}</body>
     </html>
   );
 }
