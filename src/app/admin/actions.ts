@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { sendCustomerEmail } from "@/lib/notify";
+import { siteConfig } from "@/constants/site";
 
 function slugify(s: string) {
   return s
@@ -217,6 +219,35 @@ export async function updateBooking(formData: FormData) {
     actor: "owner",
     message,
   });
+
+  // Email the customer when their appointment is confirmed.
+  if (status === "confirmed") {
+    const { data: b } = await supabase
+      .from("bookings")
+      .select("reference, starts_at, customers(full_name, email), treatments(name)")
+      .eq("id", id)
+      .single();
+    const cust = b?.customers as { full_name?: string; email?: string } | null;
+    if (b && cust?.email) {
+      await sendCustomerEmail({
+        to: cust.email,
+        name: cust.full_name || "there",
+        treatment:
+          (b.treatments as { name?: string } | null)?.name || "your appointment",
+        when: new Date(b.starts_at).toLocaleString("en-GB", {
+          timeZone: "Asia/Colombo",
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        reference: b.reference,
+        kind: "confirmed",
+        whatsappHref: siteConfig.contact.whatsappHref,
+      });
+    }
+  }
 
   revalidatePath("/admin/bookings");
   revalidatePath("/admin");

@@ -158,5 +158,18 @@ export async function submitBooking(raw: BookingInput): Promise<BookingResult> {
     notes: input.notes || undefined,
   });
 
+  // 7. Confirmation email to the customer (best-effort, only if they gave one).
+  if (input.email) {
+    await sendCustomerEmail({
+      to: input.email,
+      name: input.firstName || "there",
+      treatment: treatment.name,
+      when: whenLabel,
+      reference: booking.reference,
+      kind: "requested",
+      whatsappHref: siteConfig.contact.whatsappHref,
+    });
+  }
+
   return { ok: true, reference: booking.reference };
 }

@@ -7,40 +7,59 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { LenisContext } from "@/hooks/use-lenis";
 
 /**
- * Drives buttery smooth scrolling with Lenis and wires it into GSAP's
- * ScrollTrigger so scroll-driven animations stay perfectly in sync.
- * Honours `prefers-reduced-motion` by disabling smoothing entirely.
+ * Smooth scrolling for desktop (mouse-wheel) only.
+ *
+ * On touch devices we keep NATIVE scrolling — it's more reliable for initial
+ * layout, gives correct momentum, and avoids the "content only settles after
+ * the first scroll" bug caused by smooth-scroll libraries mis-measuring before
+ * fonts/images load. We also force a ScrollTrigger/Framer re-measure once the
+ * page has fully loaded so nothing depends on a scroll to render correctly.
  */
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const [lenis, setLenis] = useState<Lenis | null>(null);
 
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
     gsap.registerPlugin(ScrollTrigger);
 
-    const instance = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.6,
-    });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const finePointer = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    ).matches;
 
-    instance.on("scroll", ScrollTrigger.update);
+    // Re-measure every scroll-driven animation once layout is stable.
+    const refresh = () => {
+      ScrollTrigger.refresh();
+      window.dispatchEvent(new Event("resize")); // nudges Framer useScroll
+    };
+    if (document.readyState === "complete") requestAnimationFrame(refresh);
+    else window.addEventListener("load", refresh);
+    document.fonts?.ready.then(refresh).catch(() => {});
 
-    // A single gsap ticker drives Lenis for one jank-free animation loop.
-    const update = (time: number) => instance.raf(time * 1000);
-    gsap.ticker.add(update);
-    gsap.ticker.lagSmoothing(0);
+    let instance: Lenis | null = null;
+    let update: ((time: number) => void) | null = null;
 
-    setLenis(instance);
+    if (!reduced && finePointer) {
+      instance = new Lenis({
+        duration: 1.15,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        wheelMultiplier: 1,
+      });
+      instance.on("scroll", ScrollTrigger.update);
+      const inst = instance;
+      update = (time: number) => inst.raf(time * 1000);
+      gsap.ticker.add(update);
+      gsap.ticker.lagSmoothing(0);
+      setLenis(instance);
+    }
 
     return () => {
-      gsap.ticker.remove(update);
-      instance.off("scroll", ScrollTrigger.update);
-      instance.destroy();
+      window.removeEventListener("load", refresh);
+      if (update) gsap.ticker.remove(update);
+      if (instance) {
+        instance.off("scroll", ScrollTrigger.update);
+        instance.destroy();
+      }
       setLenis(null);
     };
   }, []);

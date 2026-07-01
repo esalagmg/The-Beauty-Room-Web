@@ -2,11 +2,15 @@
 
 import { useRef, type ReactNode } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { useHasFinePointer } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 /**
- * Translates children on the Y axis as the element scrolls through the
- * viewport, creating depth. `speed` > 0 moves slower than scroll (recedes),
- * negative moves faster (advances).
+ * Depth parallax on the Y axis — DESKTOP ONLY.
+ *
+ * On touch devices it renders as a plain, full-height container with no
+ * transform. This avoids the scroll-measurement offset that made images sit
+ * slightly wrong until the first scroll, and keeps mobile scrolling smooth.
  */
 export function Parallax({
   children,
@@ -18,15 +22,23 @@ export function Parallax({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const finePointer = useHasFinePointer();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [`${speed * 100}%`, `${-speed * 100}%`]);
+  const y = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [`${speed * 100}%`, `${-speed * 100}%`],
+  );
 
   return (
-    <div ref={ref} className={className}>
-      <motion.div style={{ y }} className="h-full w-full">
+    <div ref={ref} className={cn(className, !finePointer && "h-full")}>
+      <motion.div
+        style={finePointer ? { y } : undefined}
+        className="h-full w-full"
+      >
         {children}
       </motion.div>
     </div>

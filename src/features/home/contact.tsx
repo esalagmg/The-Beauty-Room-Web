@@ -90,7 +90,7 @@ export function Contact() {
         </div>
 
         {/* right — form */}
-        <Reveal direction="left" className="lg:pt-12">
+        <Reveal direction="up" className="lg:pt-12">
           <div className="rounded-[36px] border border-stone/40 bg-white/60 p-7 shadow-luxe backdrop-blur md:p-10">
             <h3 className="font-serif text-3xl font-light text-graphite">
               Send us a note

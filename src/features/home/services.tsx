@@ -85,7 +85,7 @@ export function Services({
                   </span>
                 </div>
 
-                <Reveal direction={reversed ? "left" : "right"}>
+                <Reveal direction="up">
                   <h3 className="mt-5 font-serif text-4xl font-light text-graphite md:text-5xl">
                     {cat.name}
                   </h3>

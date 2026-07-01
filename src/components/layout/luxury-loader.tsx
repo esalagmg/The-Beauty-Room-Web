@@ -17,6 +17,7 @@ export function LuxuryLoader() {
       setDone(true);
       return;
     }
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
     const start = performance.now();
@@ -37,12 +38,25 @@ export function LuxuryLoader() {
 
     return () => {
       cancelAnimationFrame(raf);
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, []);
 
   useEffect(() => {
-    if (done) document.body.style.overflow = "";
+    if (!done) return;
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    // The curtain locked scrolling while scroll-driven animations measured the
+    // layout. Now that it's lifting, force a re-measure so nothing depends on a
+    // scroll to settle into place (fires again after the exit animation).
+    const nudge = () => window.dispatchEvent(new Event("resize"));
+    const r = requestAnimationFrame(nudge);
+    const t = setTimeout(nudge, 1100);
+    return () => {
+      cancelAnimationFrame(r);
+      clearTimeout(t);
+    };
   }, [done]);
 
   return (

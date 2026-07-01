@@ -19,12 +19,24 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scroll-behavior: auto; /* Lenis owns smooth scrolling */
+    /* Constrain the layout viewport so a stray wide element can never make the
+       page render "zoomed" with a white gutter on the right (mobile). `clip`
+       clips without creating a scroll container (keeps position: sticky working);
+       `hidden` is the fallback for older Safari. */
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
     @apply bg-cream text-graphite font-sans antialiased;
     font-feature-settings: "ss01", "cv01", "kern";
+    position: relative;
+    width: 100%;
+    max-width: 100%;
     overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* Lenis */
