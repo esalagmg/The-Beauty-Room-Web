@@ -20,6 +20,11 @@ export const metadata: Metadata = {
     "The Beauty Room by Nilu",
   ],
   authors: [{ name: siteConfig.fullName }],
+  icons: {
+    icon: "/images/brand/logo-emblem.png",
+    shortcut: "/images/brand/logo-emblem.png",
+    apple: "/images/brand/logo-emblem.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

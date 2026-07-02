@@ -11,10 +11,14 @@ import { useHasFinePointer } from "@/hooks/use-media-query";
 export function Magnetic({
   children,
   strength = 0.35,
+  max,
   className,
 }: {
   children: ReactNode;
   strength?: number;
+  /** Clamp the pull to ±max px on each axis so the element can't drift into a
+   *  neighbour (useful for side-by-side buttons with a small gap). */
+  max?: number;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -24,13 +28,16 @@ export function Magnetic({
   const springX = useSpring(x, { stiffness: 220, damping: 18, mass: 0.4 });
   const springY = useSpring(y, { stiffness: 220, damping: 18, mass: 0.4 });
 
+  const clamp = (v: number) =>
+    max == null ? v : Math.max(-max, Math.min(max, v));
+
   const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current || !hasFinePointer) return;
     const rect = ref.current.getBoundingClientRect();
     const relX = e.clientX - rect.left - rect.width / 2;
     const relY = e.clientY - rect.top - rect.height / 2;
-    x.set(relX * strength);
-    y.set(relY * strength);
+    x.set(clamp(relX * strength));
+    y.set(clamp(relY * strength));
   };
 
   const reset = () => {

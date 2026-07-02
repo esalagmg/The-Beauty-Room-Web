@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Instagram, Facebook, Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
-import { Wordmark } from "./wordmark";
+import { LogoEmblem } from "./logo-emblem";
 import { Marquee } from "@/components/ui/marquee";
 import { Reveal } from "@/components/ui/reveal";
 import { siteConfig } from "@/constants/site";
@@ -29,7 +29,7 @@ export function Footer() {
         <div className="grid gap-14 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           {/* Brand */}
           <Reveal className="space-y-6">
-            <Wordmark href="/" size="md" className="items-start text-gold-soft" />
+            <LogoEmblem href="/" className="h-24 w-24" sizes="96px" />
             <p className="max-w-xs text-pretty text-sm leading-relaxed text-cream/60">
               {siteConfig.description}
             </p>
@@ -108,8 +108,18 @@ export function Footer() {
         <div className="hairline mt-16" />
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 text-[0.7rem] uppercase tracking-wide2 text-cream/40 md:flex-row">
-          <span>© {new Date().getFullYear()} The Beauty Room by Nilu</span>
-          <span>Crafted with intention · Ratnapura, Sri Lanka</span>
+          <span>© 1998 The Beauty Room by Nilu</span>
+          <span>
+            Website Crafted by{" "}
+            <a
+              href="https://www.trivistalabs.io"
+              target="_blank"
+              rel="noreferrer"
+              className="text-cream/60 underline-offset-4 transition-colors hover:text-cream hover:underline"
+            >
+              Trivista Labs (Pvt) Ltd
+            </a>
+          </span>
           <div className="flex gap-6">
             <Link href="/booking" className="hover:text-cream">
               Book

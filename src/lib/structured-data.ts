@@ -22,7 +22,7 @@ export function getLocalBusinessSchema() {
     foundingDate: String(siteConfig.established),
     priceRange: "$$",
     image: [`${url}/images/brand/founder-nilu.jpeg`],
-    logo: `${url}/icon.svg`,
+    logo: `${url}/images/brand/logo-emblem.png`,
     address: {
       "@type": "PostalAddress",
       addressLocality: location.city,
@@ -72,4 +72,51 @@ export function getLocalBusinessSchema() {
   }
 
   return schema;
+}
+
+/**
+ * Per-page JSON-LD for the /salon and /clinic pages: a Service tied to the
+ * business, an OfferCatalog of its treatments, and breadcrumbs. Improves the
+ * chance of rich results for division-specific searches.
+ */
+export function getDivisionSchema(
+  division: "salon" | "clinic",
+  offerings: string[],
+) {
+  const { url, location } = siteConfig;
+  const isSalon = division === "salon";
+  const name = isSalon ? "The Salon" : "Aesthetic Clinic";
+  const path = `${url}/${division}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        "@id": `${path}#service`,
+        name: `${name} · ${siteConfig.fullName}`,
+        serviceType: isSalon
+          ? "Hair salon, bridal & makeup services"
+          : "Aesthetic clinic & advanced skin treatments",
+        provider: { "@id": `${url}/#business` },
+        areaServed: { "@type": "City", name: location.city },
+        url: path,
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: `${name} treatments`,
+          itemListElement: offerings.map((title) => ({
+            "@type": "Offer",
+            itemOffered: { "@type": "Service", name: title },
+          })),
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: url },
+          { "@type": "ListItem", position: 2, name, item: path },
+        ],
+      },
+    ],
+  };
 }

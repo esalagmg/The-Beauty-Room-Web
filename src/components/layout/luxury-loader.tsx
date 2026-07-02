@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Wordmark } from "./wordmark";
+import { LogoEmblem } from "./logo-emblem";
 
 /**
  * First-paint curtain. A counter ticks to 100 while the wordmark settles, then
@@ -74,7 +74,7 @@ export function LuxuryLoader() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Wordmark href={null} size="lg" className="text-gold-soft" />
+            <LogoEmblem href={null} priority className="h-36 w-36 md:h-44 md:w-44" sizes="176px" />
           </motion.div>
 
           <div className="mt-10 h-px w-48 overflow-hidden bg-cream/15">

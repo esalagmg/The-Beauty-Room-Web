@@ -94,6 +94,69 @@ export async function toggleTreatmentActive(formData: FormData) {
   revalidatePath("/admin/treatments");
 }
 
+/* ── Staff / specialists ─────────────────────────────────────────── */
+
+export async function upsertStaff(formData: FormData) {
+  const supabase = await createServerSupabase();
+  if (!supabase) return;
+
+  const id = (formData.get("id") as string) || null;
+  const name = String(formData.get("name") ?? "").trim();
+
+  const { data: branch } = await supabase.from("branches").select("id").limit(1).single();
+
+  const specialties = String(formData.get("specialties") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const scope = String(formData.get("division_scope") ?? "both");
+
+  const row = {
+    branch_id: branch?.id,
+    name,
+    role: String(formData.get("role") ?? "") || null,
+    bio: String(formData.get("bio") ?? "") || null,
+    experience_label: String(formData.get("experience_label") ?? "") || null,
+    image: String(formData.get("image") ?? "") || null,
+    instagram: String(formData.get("instagram") ?? "") || null,
+    specialties,
+    division_scope: ["salon", "clinic", "both"].includes(scope) ? scope : "both",
+    display_order: num(formData.get("display_order")) ?? 0,
+    is_active: formData.get("is_active") === "on",
+    online_booking_enabled: formData.get("online_booking_enabled") === "on",
+  };
+
+  if (id) {
+    await supabase.from("staff").update(row).eq("id", id);
+  } else {
+    await supabase.from("staff").insert(row);
+  }
+
+  revalidatePublic();
+  revalidatePath("/admin/staff");
+  redirect("/admin/staff");
+}
+
+export async function deleteStaff(formData: FormData) {
+  const supabase = await createServerSupabase();
+  if (!supabase) return;
+  const id = formData.get("id") as string;
+  await supabase.from("staff").delete().eq("id", id);
+  revalidatePublic();
+  revalidatePath("/admin/staff");
+}
+
+export async function toggleStaffActive(formData: FormData) {
+  const supabase = await createServerSupabase();
+  if (!supabase) return;
+  const id = formData.get("id") as string;
+  const active = formData.get("active") === "true";
+  await supabase.from("staff").update({ is_active: active }).eq("id", id);
+  revalidatePublic();
+  revalidatePath("/admin/staff");
+}
+
 export async function upsertCategory(formData: FormData) {
   const supabase = await createServerSupabase();
   if (!supabase) return;

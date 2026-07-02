@@ -18,6 +18,21 @@ export const specialists: Specialist[] = [
     image: brand.founder,
     instagram: "@thebeautyroombynilu",
   },
+  {
+    id: "dr-nilmini",
+    name: "Dr Nilmini Jayaweera",
+    role: "Clinical Cosmetologist · Medical Aesthetician",
+    division: "clinic",
+    experience: "MBBS (Colombo)",
+    bio: "A qualified medical doctor and clinical cosmetologist, Dr Nilmini leads the clinic's advanced skin and aesthetic treatments. She pairs genuine medical precision with a gentle, consultation-first approach — so every treatment is safe, considered and tailored to your skin.",
+    expertise: [
+      "Clinical Cosmetology",
+      "Medical Aesthetics",
+      "Skin Diagnostics",
+      "Advanced Treatments",
+    ],
+    image: brand.drNilmini,
+  },
 ];
 
 export function getSpecialist(id: string | null) {

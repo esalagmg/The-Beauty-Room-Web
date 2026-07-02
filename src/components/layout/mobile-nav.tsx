@@ -1,16 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Instagram, X } from "lucide-react";
-import { Wordmark } from "./wordmark";
+import { LogoEmblem } from "./logo-emblem";
 import { navLinks } from "@/constants/nav";
 import { siteConfig } from "@/constants/site";
 import { cn } from "@/lib/utils";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -31,7 +35,12 @@ export function MobileNav() {
         <span className="h-px w-6 bg-graphite transition-all" />
       </button>
 
-      <AnimatePresence>
+      {/* Rendered in a portal so the fixed overlay escapes the navbar's
+          transform (a transformed ancestor makes `fixed` anchor to it, not
+          the viewport — which offset the menu once the page was scrolled). */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
         {open && (
           <motion.div
             className="fixed inset-0 z-[1000] flex flex-col bg-ink-gradient text-cream"
@@ -42,7 +51,7 @@ export function MobileNav() {
           >
             <div className="grain" />
             <div className="flex items-center justify-between px-6 pt-6">
-              <Wordmark size="sm" href="/" className="text-gold-soft" />
+              <LogoEmblem href="/" className="h-12 w-12" sizes="48px" />
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
@@ -106,7 +115,9 @@ export function MobileNav() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+          </AnimatePresence>,
+          document.body,
+        )}
     </>
   );
 }

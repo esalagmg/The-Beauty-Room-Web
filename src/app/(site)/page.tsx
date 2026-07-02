@@ -27,7 +27,7 @@ export default async function HomePage() {
       <BrandStory />
       <ExperienceSelector />
       <Services categories={categories} />
-      <Specialists specialist={specialists[0]} />
+      <Specialists specialists={specialists} />
       <BeforeAfter />
       <Reviews />
       <Interior />

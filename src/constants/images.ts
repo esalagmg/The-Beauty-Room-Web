@@ -13,7 +13,10 @@
 
 export const brand = {
   logo: "/images/brand/logo.jpeg",
+  /** Circular gold emblem (transparent PNG) — the primary brand mark. */
+  emblem: "/images/brand/logo-emblem.png",
   founder: "/images/brand/founder-nilu.jpeg",
+  drNilmini: "/images/brand/dr-nilmini.jpeg",
   hairSleek: "/images/brand/salon-hair-sleek.jpeg",
   hairBlowout: "/images/brand/salon-hair-blowout.jpeg",
   bridalRoses: "/images/brand/bridal-roses-closeup.jpeg",
@@ -21,6 +24,9 @@ export const brand = {
   bridalArch: "/images/brand/bridal-arch.jpeg",
   bridalSaree: "/images/brand/bridal-saree.jpeg",
   clinicFacial: "/images/brand/clinic-facial.jpeg",
+  // Real aesthetic-clinic treatment photography
+  clinicLaser: "/images/brand/clinic-laser.jpeg",
+  clinicProcedure: "/images/brand/clinic-procedure.jpeg",
 } as const;
 
 /**

@@ -33,17 +33,23 @@ export function BeforeAfterSlider({
     <div
       ref={ref}
       className={cn(
-        "group relative select-none overflow-hidden rounded-[28px] shadow-luxe",
+        // touch-pan-y: let vertical page scrolling through, but keep horizontal
+        // drags for the slider (otherwise touch drags scroll the page and the
+        // handle only jumps to the initial tap).
+        "group relative touch-pan-y select-none overflow-hidden rounded-[28px] shadow-luxe",
         className,
       )}
       onPointerDown={(e) => {
         dragging.current = true;
-        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+        ref.current?.setPointerCapture?.(e.pointerId);
         setFromClientX(e.clientX);
       }}
       onPointerMove={(e) => dragging.current && setFromClientX(e.clientX)}
-      onPointerUp={() => (dragging.current = false)}
-      onPointerLeave={() => (dragging.current = false)}
+      onPointerUp={(e) => {
+        dragging.current = false;
+        ref.current?.releasePointerCapture?.(e.pointerId);
+      }}
+      onPointerCancel={() => (dragging.current = false)}
     >
       {/* after (full) */}
       <SmartImage

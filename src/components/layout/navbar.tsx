@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { Wordmark } from "./wordmark";
+import { LogoEmblem } from "./logo-emblem";
 import { MobileNav } from "./mobile-nav";
 import { Magnetic } from "@/components/ui/magnetic";
 import { navLinks } from "@/constants/nav";
@@ -39,8 +40,13 @@ export function Navbar() {
             : "border border-transparent bg-transparent",
         )}
       >
-        {/* Left — wordmark */}
-        <Wordmark size="sm" className="text-graphite" />
+        {/* Left — emblem + wordmark lockup */}
+        <Link href="/" aria-label="The Beauty Room by Nilu, home" className="flex items-center gap-3">
+          <LogoEmblem href={null} className="h-10 w-10 shrink-0 md:h-11 md:w-11" priority sizes="44px" />
+          <span className="hidden sm:block">
+            <Wordmark href={null} size="sm" className="text-graphite" />
+          </span>
+        </Link>
 
         {/* Center — links (desktop) */}
         <div className="hidden items-center gap-9 lg:flex">

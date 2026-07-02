@@ -1,0 +1,40 @@
+import {
+  Scissors,
+  Gem,
+  Sparkles,
+  Leaf,
+  ShieldCheck,
+  HeartHandshake,
+  Award,
+  Users,
+  Microscope,
+  FlaskConical,
+  Syringe,
+  Droplets,
+  Stethoscope,
+  Wand2,
+  Clock,
+  Heart,
+  type LucideIcon,
+} from "lucide-react";
+import type { IconKey } from "@/constants/divisions";
+
+/** Maps a content `IconKey` to its lucide icon so data stays serialisable. */
+export const iconMap: Record<IconKey, LucideIcon> = {
+  scissors: Scissors,
+  gem: Gem,
+  sparkles: Sparkles,
+  leaf: Leaf,
+  shield: ShieldCheck,
+  hands: HeartHandshake,
+  award: Award,
+  users: Users,
+  microscope: Microscope,
+  flask: FlaskConical,
+  syringe: Syringe,
+  droplet: Droplets,
+  stethoscope: Stethoscope,
+  wand: Wand2,
+  clock: Clock,
+  heart: Heart,
+};

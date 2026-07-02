@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { Eyebrow } from "@/components/ui/typography";
 import { Reveal } from "@/components/ui/reveal";
 import { BeforeAfterSlider } from "@/components/ui/before-after-slider";
+import { SmartImage } from "@/components/ui/smart-image";
 import { gallery, galleryCategories } from "@/constants/gallery";
 import { cn } from "@/lib/utils";
 
@@ -64,12 +65,28 @@ export function BeforeAfter() {
                 item.id === "g1" || item.id === "g4" ? "lg:row-span-1" : "",
               )}
             >
-              <BeforeAfterSlider
-                before={item.before}
-                after={item.after}
-                alt={item.title}
-                className="aspect-[4/5]"
-              />
+              {item.composite ? (
+                <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] shadow-luxe">
+                  <SmartImage
+                    src={item.composite}
+                    alt={`${item.title}, before and after`}
+                    fill
+                    sizes="(max-width: 768px) 90vw, 45vw"
+                    className="object-cover"
+                    wrapperClassName="h-full w-full"
+                  />
+                  <span className="absolute left-4 top-4 rounded-full bg-graphite/70 px-3 py-1 font-sans text-[0.55rem] uppercase tracking-wide2 text-cream backdrop-blur">
+                    Before &amp; After
+                  </span>
+                </div>
+              ) : (
+                <BeforeAfterSlider
+                  before={item.before ?? ""}
+                  after={item.after ?? ""}
+                  alt={item.title}
+                  className="aspect-[4/5]"
+                />
+              )}
               <div className="mt-3 flex items-center justify-between px-1">
                 <p className="font-serif text-lg italic text-graphite">{item.title}</p>
                 <span className="font-sans text-[0.6rem] uppercase tracking-wide2 text-taupe">

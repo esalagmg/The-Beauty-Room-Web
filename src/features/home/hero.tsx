@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   motion,
   useScroll,
@@ -14,6 +14,7 @@ import { Magnetic } from "@/components/ui/magnetic";
 import { FloatingBookingWidget } from "./floating-booking-widget";
 import { brand, img } from "@/constants/images";
 import { siteConfig } from "@/constants/site";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const headlineLines = [
@@ -24,7 +25,8 @@ const headlineLines = [
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const lineVariant: Variants = {
-  hidden: { y: "110%" },
+  // Start well below the (descender-padded) mask so no glyph peeks pre-reveal.
+  hidden: { y: "140%" },
   show: (i: number) => ({
     y: "0%",
     transition: { duration: 1, ease: EASE, delay: 0.5 + i * 0.12 },
@@ -33,6 +35,12 @@ const lineVariant: Variants = {
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
+
+  // The line-reveal needs `overflow-hidden` to mask each line as it slides up,
+  // but that same clip cuts the descenders (the tails of "g"/"y") once settled.
+  // So we only clip during the animation and release it the moment the last
+  // line finishes — giving a clean reveal AND full descenders with tight leading.
+  const [revealed, setRevealed] = useState(false);
 
   // Pointer-reactive ambient glow — moved with a GPU transform (cheap) rather
   // than repainting a full-screen radial gradient every frame.
@@ -97,13 +105,22 @@ export function Hero() {
 
           <h1 className="mt-6 font-serif font-light leading-[1.02] text-graphite">
             {headlineLines.map((line, i) => (
-              <span key={i} className="block overflow-hidden pb-[0.12em]">
+              <span
+                key={i}
+                className={cn(
+                  "block pb-[0.14em]",
+                  !revealed && "overflow-hidden",
+                )}
+              >
                 <motion.span
                   className="block text-[clamp(2.75rem,7vw,6.5rem)] leading-[1.02]"
                   custom={i}
                   variants={lineVariant}
                   initial="hidden"
                   animate="show"
+                  onAnimationComplete={() => {
+                    if (i === headlineLines.length - 1) setRevealed(true);
+                  }}
                 >
                   {line.map((part, j) => (
                     <span
@@ -134,23 +151,23 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.9 }}
-            className="mt-9 flex flex-col gap-3 sm:flex-row"
+            className="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4"
           >
-            <Magnetic strength={0.25}>
+            <Magnetic strength={0.18} max={12} className="w-full sm:w-auto">
               <Link
                 href="/booking?division=salon"
                 data-cursor-label="Salon"
-                className="group flex h-[56px] items-center justify-center gap-2.5 rounded-full bg-graphite px-8 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-colors duration-500 hover:bg-ink"
+                className="group flex h-[56px] w-full items-center justify-center gap-2.5 rounded-full bg-graphite px-8 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-colors duration-500 hover:bg-ink sm:w-auto"
               >
                 <Scissors className="h-4 w-4" />
                 Book Salon
               </Link>
             </Magnetic>
-            <Magnetic strength={0.25}>
+            <Magnetic strength={0.18} max={12} className="w-full sm:w-auto">
               <Link
                 href="/booking?division=clinic"
                 data-cursor-label="Clinic"
-                className="group flex h-[56px] items-center justify-center gap-2.5 rounded-full border border-graphite/30 px-8 font-sans text-[0.72rem] uppercase tracking-luxe text-graphite transition-colors duration-500 hover:border-graphite hover:bg-white/40"
+                className="group flex h-[56px] w-full items-center justify-center gap-2.5 rounded-full border border-graphite/30 px-8 font-sans text-[0.72rem] uppercase tracking-luxe text-graphite transition-colors duration-500 hover:border-graphite hover:bg-white/40 sm:w-auto"
               >
                 <Sparkles className="h-4 w-4" />
                 Book Aesthetic Clinic

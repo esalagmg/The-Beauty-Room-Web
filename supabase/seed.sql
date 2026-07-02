@@ -14,7 +14,7 @@ begin
     (b,'salon','bridal','Bridal & Couture','For the moments that matter','Editorial bridal artistry: makeup, hair, draping and styling composed for a single, unforgettable day.','/images/brand/bridal-arch.jpeg',2),
     (b,'salon','makeup','Makeup Studio','Skin-first artistry','Luminous, photograph-ready makeup built on a foundation of skin prep and timeless technique.','/images/brand/bridal-roses-closeup.jpeg',3),
     (b,'clinic','skin','Skin Studio','Science-led facials','Result-driven facials that pair clinical actives with deeply restorative ritual, for visibly luminous skin.','/images/brand/clinic-facial.jpeg',4),
-    (b,'clinic','advanced','Advanced Aesthetics','Clinical, considered, refined','Advanced, evidence-based treatments delivered with medical precision and an unwavering focus on natural results.','/images/brand/founder-nilu.jpeg',5),
+    (b,'clinic','advanced','Advanced Aesthetics','Clinical, considered, refined','Advanced, evidence-based treatments delivered with medical precision and an unwavering focus on natural results.','/images/brand/clinic-procedure.jpeg',5),
     (b,'clinic','body','Body & Wellness','Restore · Sculpt · Glow','Holistic body therapies and contouring rituals to leave you renewed from head to toe.','/images/brand/bridal-forest.jpeg',6)
   on conflict (branch_id, slug) do update set
     name=excluded.name, tagline=excluded.tagline, description=excluded.description,

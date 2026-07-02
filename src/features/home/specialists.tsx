@@ -7,80 +7,122 @@ import { Reveal } from "@/components/ui/reveal";
 import { Parallax } from "@/components/ui/parallax";
 import { SmartImage } from "@/components/ui/smart-image";
 import { Button } from "@/components/ui/button";
-import { specialists } from "@/constants/specialists";
+import { specialists as staticSpecialists } from "@/constants/specialists";
 import type { Specialist } from "@/types";
 import { siteConfig } from "@/constants/site";
+import { cn } from "@/lib/utils";
 
-export function Specialists({ specialist }: { specialist?: Specialist }) {
-  const nilu = specialist ?? specialists[0];
+function displayName(name: string) {
+  return name.startsWith("Dr")
+    ? name.split(" ").slice(0, 2).join(" ")
+    : name.split(" ")[0];
+}
+
+export function Specialists({
+  specialists = staticSpecialists,
+}: {
+  specialists?: Specialist[];
+}) {
+  const people = specialists.length ? specialists : staticSpecialists;
 
   return (
     <Section id="specialists" tone="pearl" className="overflow-hidden">
-      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-        {/* portrait */}
-        <div className="relative order-1">
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[36px] shadow-luxe">
-            <Parallax speed={0.1} className="h-[118%] w-full">
-              <SmartImage
-                src={nilu.image}
-                alt={nilu.name}
-                fill
-                sizes="(max-width: 1024px) 90vw, 42vw"
-                className="object-cover object-top"
-                wrapperClassName="h-full w-full"
-              />
-            </Parallax>
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
-          </div>
+      <div className="space-y-24 lg:space-y-32">
+        {people.map((person, i) => (
+          <PersonBlock
+            key={person.id}
+            person={person}
+            reversed={i % 2 === 1}
+            primary={i === 0}
+          />
+        ))}
+      </div>
+    </Section>
+  );
+}
 
-          {/* floating experience card */}
+function PersonBlock({
+  person,
+  reversed,
+  primary,
+}: {
+  person: Specialist;
+  reversed: boolean;
+  primary: boolean;
+}) {
+  const bookHref = primary
+    ? "/booking"
+    : `/booking?division=${person.division === "salon" ? "salon" : "clinic"}&specialist=${person.id}`;
+
+  return (
+    <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+      {/* portrait */}
+      <div className={cn("relative", reversed ? "order-1 lg:order-2" : "order-1")}>
+        <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[36px] shadow-luxe">
+          <Parallax speed={0.1} className="h-[118%] w-full">
+            <SmartImage
+              src={person.image}
+              alt={person.name}
+              fill
+              sizes="(max-width: 1024px) 90vw, 42vw"
+              className="object-cover object-top"
+              wrapperClassName="h-full w-full"
+            />
+          </Parallax>
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
+        </div>
+
+        {/* floating experience card (primary only) */}
+        {primary && (
           <Reveal
             delay={0.15}
             className="glass absolute -bottom-6 right-2 w-44 rounded-3xl p-5 shadow-luxe sm:right-6 lg:-right-4"
           >
             <p className="font-serif text-4xl font-light text-graphite">
-              {nilu.experience}
+              {person.experience}
             </p>
             <p className="mt-1 text-[0.65rem] uppercase tracking-wide2 text-taupe">
               Of hands-on artistry
             </p>
           </Reveal>
-        </div>
+        )}
+      </div>
 
-        {/* bio */}
-        <div className="order-2">
-          <Eyebrow>The Artist</Eyebrow>
-          <Reveal>
-            <h2 className="mt-5 font-serif text-display-sm font-light leading-[1.02] text-graphite">
-              Meet <span className="italic text-gold-foil">Nilu</span>
-            </h2>
-            <p className="mt-2 font-sans text-[0.7rem] uppercase tracking-luxe text-gold-deep">
-              {nilu.role}
-            </p>
-          </Reveal>
+      {/* bio */}
+      <div className={cn(reversed ? "order-2 lg:order-1" : "order-2")}>
+        <Eyebrow>{primary ? "The Artist" : "The Clinic Doctor"}</Eyebrow>
+        <Reveal>
+          <h2 className="mt-5 font-serif text-display-sm font-light leading-[1.02] text-graphite">
+            Meet <span className="italic text-gold-foil">{displayName(person.name)}</span>
+          </h2>
+          <p className="mt-2 font-sans text-[0.7rem] uppercase tracking-luxe text-gold-deep">
+            {person.role}
+            {person.experience && !primary ? ` · ${person.experience}` : ""}
+          </p>
+        </Reveal>
 
-          <Reveal delay={0.1}>
-            <p className="mt-6 max-w-md text-pretty leading-relaxed text-charcoal/80">
-              {nilu.bio}
-            </p>
-          </Reveal>
+        <Reveal delay={0.1}>
+          <p className="mt-6 max-w-md text-pretty leading-relaxed text-charcoal/80">
+            {person.bio}
+          </p>
+        </Reveal>
 
-          {/* expertise */}
-          <Reveal delay={0.15} className="mt-7 flex flex-wrap gap-2.5">
-            {nilu.expertise.map((e) => (
-              <span
-                key={e}
-                className="rounded-full border border-stone/60 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-wide2 text-charcoal/70"
-              >
-                {e}
-              </span>
-            ))}
-          </Reveal>
+        <Reveal delay={0.15} className="mt-7 flex flex-wrap gap-2.5">
+          {person.expertise.map((e) => (
+            <span
+              key={e}
+              className="rounded-full border border-stone/60 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-wide2 text-charcoal/70"
+            >
+              {e}
+            </span>
+          ))}
+        </Reveal>
 
-          <Reveal delay={0.2} className="mt-9 flex flex-wrap items-center gap-4">
-            <Button href="/booking" withArrow cursorLabel="Book">
-              Book with Nilu
-            </Button>
+        <Reveal delay={0.2} className="mt-9 flex flex-wrap items-center gap-4">
+          <Button href={bookHref} withArrow cursorLabel="Book">
+            Book with {displayName(person.name)}
+          </Button>
+          {person.instagram && (
             <a
               href={siteConfig.social.instagram}
               target="_blank"
@@ -88,12 +130,12 @@ export function Specialists({ specialist }: { specialist?: Specialist }) {
               className="group inline-flex items-center gap-2 font-sans text-[0.7rem] uppercase tracking-wide2 text-charcoal/70 transition-colors hover:text-gold-deep"
             >
               <Instagram className="h-4 w-4" />
-              {nilu.instagram}
+              {person.instagram}
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
-          </Reveal>
-        </div>
+          )}
+        </Reveal>
       </div>
-    </Section>
+    </div>
   );
 }

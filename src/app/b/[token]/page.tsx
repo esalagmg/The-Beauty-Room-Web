@@ -24,7 +24,7 @@ function fmt(iso: string) {
 
 const THANKYOU: Record<string, { title: string; body: string }> = {
   accept: { title: "Confirmed", body: "Your appointment is confirmed. We can’t wait to see you." },
-  change: { title: "Noted", body: "Thanks — we’ll be in touch on WhatsApp to find a better time." },
+  change: { title: "Noted", body: "Thanks, we’ll be in touch on WhatsApp to find a better time." },
   cancel: { title: "Cancelled", body: "Your appointment has been cancelled. We hope to see you another time." },
   expired: { title: "Link expired", body: "This link has expired or was already used. Please message us on WhatsApp." },
 };

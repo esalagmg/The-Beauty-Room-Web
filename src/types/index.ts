@@ -47,8 +47,11 @@ export interface GalleryItem {
   category: string;
   division: Division;
   title: string;
-  before: string;
-  after: string;
+  /** Draggable pair (before + after). Omit when `composite` is provided. */
+  before?: string;
+  after?: string;
+  /** A single pre-composed before|after image, rendered static (not draggable). */
+  composite?: string;
 }
 
 export interface InteriorSpace {

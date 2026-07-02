@@ -1,5 +1,5 @@
 import type { ServiceCategory } from "@/types";
-import { img } from "./images";
+import { brand, img } from "./images";
 
 export const serviceCategories: ServiceCategory[] = [
   // ──────────────────────────── SALON ────────────────────────────
@@ -149,7 +149,7 @@ export const serviceCategories: ServiceCategory[] = [
     tagline: "Clinical, considered, refined",
     description:
       "Advanced, evidence-based treatments delivered with medical precision and an unwavering focus on natural results.",
-    image: img.clinicTreatment,
+    image: brand.clinicProcedure,
     services: [
       {
         id: "microneedling",

@@ -9,6 +9,7 @@ import {
   LogOut,
   Sparkles,
   Tag,
+  Users,
 } from "lucide-react";
 import { Wordmark } from "@/components/layout/wordmark";
 import { signOut } from "@/app/admin/actions";
@@ -18,6 +19,7 @@ const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/treatments", label: "Treatments", icon: Sparkles },
+  { href: "/admin/staff", label: "Specialists", icon: Users },
   { href: "/admin/categories", label: "Categories", icon: Tag },
 ];
 

@@ -112,7 +112,13 @@ interface DbStaff {
   image: string | null;
   instagram: string | null;
   specialties: string[] | null;
+  division_scope?: string | null;
 }
+
+const STAFF_COLS =
+  "id, name, role, bio, experience_label, image, instagram, specialties, division_scope";
+const STAFF_COLS_LEGACY =
+  "id, name, role, bio, experience_label, image, instagram, specialties";
 
 /** Specialists, ready for the UI. */
 export async function getSpecialists(): Promise<Specialist[]> {
@@ -121,23 +127,40 @@ export async function getSpecialists(): Promise<Specialist[]> {
   const supabase = createPublicClient();
   if (!supabase) return staticSpecialists;
 
-  const { data } = await supabase
+  // Prefer the division-scoped columns; gracefully fall back if the
+  // `division_scope` column hasn't been added yet (pre-migration 0002).
+  const primary = await supabase
     .from("staff")
-    .select("id, name, role, bio, experience_label, image, instagram, specialties")
+    .select(STAFF_COLS)
     .eq("is_active", true)
     .order("display_order");
 
-  if (!data || data.length === 0) return staticSpecialists;
+  let rows = primary.data as DbStaff[] | null;
+  if (primary.error) {
+    const legacy = await supabase
+      .from("staff")
+      .select(STAFF_COLS_LEGACY)
+      .eq("is_active", true)
+      .order("display_order");
+    rows = legacy.data as DbStaff[] | null;
+  }
 
-  return (data as DbStaff[]).map((s) => ({
-    id: s.id,
-    name: s.name,
-    role: s.role ?? "",
-    division: "both",
-    experience: s.experience_label ?? "",
-    bio: s.bio ?? "",
-    expertise: s.specialties ?? [],
-    image: s.image ?? "",
-    instagram: s.instagram ?? undefined,
-  }));
+  if (!rows || rows.length === 0) return staticSpecialists;
+
+  return rows.map((s) => {
+    const scope = s.division_scope;
+    const division: Specialist["division"] =
+      scope === "salon" || scope === "clinic" ? scope : "both";
+    return {
+      id: s.id,
+      name: s.name,
+      role: s.role ?? "",
+      division,
+      experience: s.experience_label ?? "",
+      bio: s.bio ?? "",
+      expertise: s.specialties ?? [],
+      image: s.image ?? "",
+      instagram: s.instagram ?? undefined,
+    };
+  });
 }
