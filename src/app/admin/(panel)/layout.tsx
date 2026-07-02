@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { isAllowedAdmin } from "@/lib/admin-access";
 import { AdminShell } from "@/features/admin/admin-shell";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
     ? await supabase.auth.getUser()
     : { data: { user: null } };
 
-  if (!data.user) redirect("/admin/login");
+  if (!data.user || !isAllowedAdmin(data.user.email)) redirect("/admin/login");
 
   return <AdminShell email={data.user.email}>{children}</AdminShell>;
 }

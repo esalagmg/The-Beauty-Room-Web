@@ -75,6 +75,22 @@ export function getLocalBusinessSchema() {
 }
 
 /**
+ * FAQPage JSON-LD — mirrors the FAQ accordion rendered on the page, making
+ * the questions eligible for FAQ rich results.
+ */
+export function getFaqSchema(items: Array<{ q: string; a: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+}
+
+/**
  * Per-page JSON-LD for the /salon and /clinic pages: a Service tied to the
  * business, an OfferCatalog of its treatments, and breadcrumbs. Improves the
  * chance of rich results for division-specific searches.

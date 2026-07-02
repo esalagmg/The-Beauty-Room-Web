@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     shortcut: "/images/brand/logo-emblem.png",
     apple: "/images/brand/logo-emblem.png",
   },
+  // The share image comes from src/app/opengraph-image.tsx (branded card).
   openGraph: {
     type: "website",
     locale: "en_US",

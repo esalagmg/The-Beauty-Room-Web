@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ClinicExperience } from "@/features/division/clinic-experience";
 import type { TreatmentDisplay } from "@/features/division/treatments-list";
-import { getDivisionSchema } from "@/lib/structured-data";
+import { getDivisionSchema, getFaqSchema } from "@/lib/structured-data";
 import { getCategoriesByDivision, getSpecialists } from "@/lib/data/catalog";
+import { divisionContent } from "@/constants/divisions";
 
 export const revalidate = 120;
 
@@ -59,6 +60,7 @@ export default async function ClinicPage() {
   );
 
   const offerings = treatments.map((t) => t.name).slice(0, 12);
+  const faqs = divisionContent.clinic.faqs?.items ?? [];
 
   return (
     <>
@@ -68,6 +70,14 @@ export default async function ClinicPage() {
           __html: JSON.stringify(getDivisionSchema("clinic", offerings)),
         }}
       />
+      {faqs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(getFaqSchema(faqs)),
+          }}
+        />
+      )}
       <ClinicExperience treatments={treatments} specialists={specialists} />
     </>
   );

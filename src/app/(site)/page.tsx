@@ -10,9 +10,14 @@ import { Interior } from "@/features/home/interior";
 import { InstagramFeed } from "@/features/home/instagram";
 import { Contact } from "@/features/home/contact";
 import { getServiceCategories, getSpecialists } from "@/lib/data/catalog";
+import type { Metadata } from "next";
 
 // Revalidate the static page periodically so catalog edits appear automatically.
 export const revalidate = 120;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   const [categories, specialists] = await Promise.all([

@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Book an Appointment",
   description:
     "Reserve your salon or aesthetic clinic appointment at The Beauty Room by Nilu, a calm and considered booking experience.",
+  alternates: { canonical: "/booking" },
 };
 
 export default async function BookingPage() {

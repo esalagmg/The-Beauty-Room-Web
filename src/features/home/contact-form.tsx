@@ -8,12 +8,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { sendInquiry } from "./contact-actions";
+
 const schema = z.object({
   name: z.string().min(2, "Please enter your name"),
   email: z.string().email("Enter a valid email"),
   phone: z.string().min(7, "Enter a valid number"),
   interest: z.enum(["salon", "clinic", "bridal", "other"]),
   message: z.string().min(10, "Tell us a little more (10+ characters)"),
+  company: z.string().optional(), // honeypot
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -27,6 +30,7 @@ const interests = [
 
 export function ContactForm() {
   const [sent, setSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -42,12 +46,15 @@ export function ContactForm() {
   const interest = watch("interest");
 
   const onSubmit = async (data: FormValues) => {
-    // Simulated submit — wire to an API route / CRM in production.
-    await new Promise((r) => setTimeout(r, 900));
-    console.info("Inquiry submitted", data);
-    setSent(true);
-    reset();
-    setTimeout(() => setSent(false), 5000);
+    setErrorMsg(null);
+    const res = await sendInquiry(data);
+    if (res.ok) {
+      setSent(true);
+      reset();
+      setTimeout(() => setSent(false), 5000);
+    } else {
+      setErrorMsg(res.error);
+    }
   };
 
   const field =
@@ -55,19 +62,53 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* honeypot — hidden from users, catches naive bots */}
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+        {...register("company")}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <input placeholder="Full name" className={field} {...register("name")} />
+          <input
+            placeholder="Full name"
+            aria-label="Full name"
+            autoComplete="name"
+            aria-invalid={!!errors.name}
+            className={field}
+            {...register("name")}
+          />
           {errors.name && <Err msg={errors.name.message} />}
         </div>
         <div>
-          <input placeholder="Phone" className={field} {...register("phone")} />
+          <input
+            type="tel"
+            inputMode="tel"
+            placeholder="Phone"
+            aria-label="Phone"
+            autoComplete="tel"
+            aria-invalid={!!errors.phone}
+            className={field}
+            {...register("phone")}
+          />
           {errors.phone && <Err msg={errors.phone.message} />}
         </div>
       </div>
 
       <div>
-        <input placeholder="Email address" className={field} {...register("email")} />
+        <input
+          type="email"
+          inputMode="email"
+          placeholder="Email address"
+          aria-label="Email address"
+          autoComplete="email"
+          aria-invalid={!!errors.email}
+          className={field}
+          {...register("email")}
+        />
         {errors.email && <Err msg={errors.email.message} />}
       </div>
 
@@ -94,11 +135,22 @@ export function ContactForm() {
         <textarea
           rows={4}
           placeholder="How can we help you feel your best?"
+          aria-label="Message"
+          aria-invalid={!!errors.message}
           className={cn(field, "resize-none")}
           {...register("message")}
         />
         {errors.message && <Err msg={errors.message.message} />}
       </div>
+
+      {errorMsg && (
+        <p
+          role="alert"
+          className="rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-center font-sans text-[0.72rem] text-gold-deep"
+        >
+          {errorMsg}
+        </p>
+      )}
 
       <button
         type="submit"
@@ -128,6 +180,7 @@ export function ContactForm() {
 function Err({ msg }: { msg?: string }) {
   return (
     <motion.p
+      role="alert"
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
       className="mt-1.5 pl-1 font-sans text-[0.68rem] text-gold-deep"

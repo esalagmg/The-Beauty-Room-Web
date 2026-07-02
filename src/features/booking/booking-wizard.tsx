@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,7 +19,7 @@ import { SmartImage } from "@/components/ui/smart-image";
 import { Calendar, TIME_SLOTS } from "./calendar";
 import { BookingSummary } from "./booking-summary";
 import { findCategory, findService, specialistsForDivision } from "./resolve";
-import { submitBooking } from "./actions";
+import { submitBooking, getTakenSlots } from "./actions";
 import { serviceCategories } from "@/constants/services";
 import { specialists as staticSpecialists } from "@/constants/specialists";
 import { brand, img } from "@/constants/images";
@@ -74,8 +74,33 @@ export function BookingWizard({
   const [submitting, setSubmitting] = useState(false);
   const [bookingRef, setBookingRef] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [takenSlots, setTakenSlots] = useState<string[]>([]);
 
   const set = (patch: Partial<BookingState>) => setState((s) => ({ ...s, ...patch }));
+
+  // Load real availability (booked + past + lead-time) for the chosen date.
+  useEffect(() => {
+    let active = true;
+    if (!state.date || !state.serviceId) {
+      setTakenSlots([]);
+      return;
+    }
+    getTakenSlots({
+      treatmentId: state.serviceId,
+      specialistId: state.specialistId,
+      date: state.date,
+    })
+      .then((slots) => {
+        if (!active) return;
+        setTakenSlots(slots);
+        // Clear a chosen time that has since become unavailable.
+        setState((s) => (s.time && slots.includes(s.time) ? { ...s, time: null } : s));
+      })
+      .catch(() => active && setTakenSlots([]));
+    return () => {
+      active = false;
+    };
+  }, [state.date, state.serviceId, state.specialistId]);
 
   const handleConfirm = async () => {
     if (!state.division || !state.serviceId || !state.date || !state.time) return;
@@ -102,6 +127,7 @@ export function BookingWizard({
       if (res.reason === "slot_taken") {
         setDir(-1);
         setIndex(4); // back to date & time
+        scrollToTop();
       }
     }
   };
@@ -111,7 +137,6 @@ export function BookingWizard({
     [allCategories, state.division],
   );
   const category = findCategory(allCategories, state.categoryId);
-  const service = findService(allCategories, state.categoryId, state.serviceId);
   const specialists = useMemo(
     () => specialistsForDivision(allSpecialists, state.division),
     [allSpecialists, state.division],
@@ -142,15 +167,29 @@ export function BookingWizard({
     }
   })();
 
+  // Bring the new step's title back into view when advancing — on mobile the
+  // Continue button sits below a long list, so without this the next step
+  // opens mid-scroll.
+  const topRef = useRef<HTMLDivElement>(null);
+  const scrollToTop = () => {
+    const el = topRef.current;
+    if (!el) return;
+    if (el.getBoundingClientRect().top < 0) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   const go = (delta: number) => {
     setDir(delta);
     setIndex((i) => Math.min(STEPS.length - 1, Math.max(0, i + delta)));
+    scrollToTop();
   };
 
   const jumpTo = (i: number) => {
     if (i < index) {
       setDir(-1);
       setIndex(i);
+      scrollToTop();
     }
   };
 
@@ -170,7 +209,7 @@ export function BookingWizard({
       {/* ── Main column ───────────────────────────────────────── */}
       <div>
         {/* progress */}
-        <div className="mb-10">
+        <div ref={topRef} className="mb-10 scroll-mt-28">
           <div className="hidden items-center justify-between md:flex">
             {STEPS.map((s, i) => {
               const active = i === index;
@@ -299,7 +338,9 @@ export function BookingWizard({
                     return (
                       <button
                         key={s.id}
+                        type="button"
                         onClick={() => set({ serviceId: s.id })}
+                        aria-pressed={selected}
                         className={cn(
                           "flex w-full items-center justify-between gap-4 rounded-3xl border p-5 text-left transition-all duration-400",
                           selected
@@ -357,7 +398,9 @@ export function BookingWizard({
                   {specialists.map((sp) => (
                     <button
                       key={sp.id}
+                      type="button"
                       onClick={() => set({ specialistId: sp.id })}
+                      aria-pressed={state.specialistId === sp.id}
                       className={cn(
                         "group flex items-center gap-4 rounded-3xl border p-4 text-left transition-all duration-400",
                         state.specialistId === sp.id
@@ -409,13 +452,18 @@ export function BookingWizard({
                     <div className="mt-4 grid grid-cols-3 gap-2.5">
                       {TIME_SLOTS.map((t) => {
                         const selected = state.time === t;
+                        const unavailable = takenSlots.includes(t);
                         return (
                           <button
                             key={t}
-                            disabled={!state.date}
+                            type="button"
+                            disabled={!state.date || unavailable}
                             onClick={() => set({ time: t })}
+                            aria-pressed={selected}
                             className={cn(
-                              "rounded-2xl border py-3.5 font-sans text-sm transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40",
+                              "rounded-2xl border py-3.5 font-sans text-sm transition-all duration-300 disabled:cursor-not-allowed",
+                              unavailable && "line-through opacity-30",
+                              !unavailable && "disabled:opacity-40",
                               selected
                                 ? "border-graphite bg-graphite text-cream"
                                 : "border-stone/50 bg-white/50 text-graphite hover:border-graphite/50",
@@ -429,6 +477,11 @@ export function BookingWizard({
                     {!state.date && (
                       <p className="mt-4 text-sm text-taupe">Select a date to see times.</p>
                     )}
+                    {state.date && takenSlots.length >= TIME_SLOTS.length && (
+                      <p className="mt-4 text-sm text-taupe">
+                        No times left on this date — please choose another day.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -437,22 +490,29 @@ export function BookingWizard({
                 <div className="grid max-w-2xl gap-4 sm:grid-cols-2">
                   <Field
                     label="First name"
+                    autoComplete="given-name"
                     value={state.firstName}
                     onChange={(v) => set({ firstName: v })}
                   />
                   <Field
                     label="Last name"
+                    autoComplete="family-name"
                     value={state.lastName}
                     onChange={(v) => set({ lastName: v })}
                   />
                   <Field
                     label="Email"
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
                     value={state.email}
                     onChange={(v) => set({ email: v })}
                   />
                   <Field
                     label="Phone"
+                    type="tel"
+                    autoComplete="tel"
+                    inputMode="tel"
                     value={state.phone}
                     onChange={(v) => set({ phone: v })}
                   />
@@ -483,7 +543,10 @@ export function BookingWizard({
         </div>
 
         {submitError && (
-          <p className="mt-6 rounded-2xl border border-gold/40 bg-gold/10 px-5 py-3 text-center font-sans text-sm text-gold-deep">
+          <p
+            role="alert"
+            className="mt-6 rounded-2xl border border-gold/40 bg-gold/10 px-5 py-3 text-center font-sans text-sm text-gold-deep"
+          >
             {submitError}
           </p>
         )}
@@ -549,7 +612,9 @@ function SelectCard({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={cn(
         "group relative overflow-hidden rounded-3xl border text-left transition-all duration-400",
         tall ? "aspect-[4/3]" : "aspect-[4/3]",
@@ -583,11 +648,15 @@ function Field({
   value,
   onChange,
   type = "text",
+  autoComplete,
+  inputMode,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
+  autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
   return (
     <label className="block">
@@ -597,6 +666,8 @@ function Field({
       <input
         type={type}
         value={value}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
         onChange={(e) => onChange(e.target.value)}
         className="mt-1.5 w-full rounded-2xl border border-stone/50 bg-white/60 px-5 py-4 font-sans text-sm text-graphite outline-none transition-colors focus:border-gold"
       />

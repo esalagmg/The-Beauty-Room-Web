@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { notifyOwnerNewBooking, sendCustomerEmail } from "@/lib/notify";
 import { siteConfig } from "@/constants/site";
+import { TIME_SLOTS } from "./slots";
 
 const schema = z.object({
   division: z.enum(["salon", "clinic"]),
@@ -34,6 +35,98 @@ function toRange(date: string, time: string, durationMin: number) {
   const start = new Date(`${date}T${hh}:${mm}:00${SL_OFFSET}`);
   const end = new Date(start.getTime() + durationMin * 60000);
   return { startsAt: start.toISOString(), endsAt: end.toISOString() };
+}
+
+/**
+ * Which of the fixed TIME_SLOTS are unavailable for a given date — either
+ * already booked (no free specialist covers that time) or inside the treatment's
+ * lead-time window. Returns [] on any error so the UI degrades to "show all"
+ * (the DB exclusion constraint remains the final source of truth at submit).
+ */
+export async function getTakenSlots(input: {
+  treatmentId: string | null;
+  specialistId: string | null | undefined;
+  date: string | null;
+}): Promise<string[]> {
+  if (!isSupabaseConfigured || !input.treatmentId || !input.date) return [];
+  const db = createAdminClient();
+  if (!db) return [];
+
+  try {
+    const { data: treatment } = await db
+      .from("treatments")
+      .select("id, branch_id, duration_minutes, min_lead_minutes")
+      .eq("id", input.treatmentId)
+      .maybeSingle();
+    if (!treatment) return [];
+
+    const duration = treatment.duration_minutes ?? 60;
+    const leadMs = (treatment.min_lead_minutes ?? 120) * 60000;
+
+    // Candidate staff for this treatment.
+    let staffIds: string[] = [];
+    if (input.specialistId && input.specialistId !== "any") {
+      staffIds = [input.specialistId];
+    } else {
+      const { data: links } = await db
+        .from("treatment_specialists")
+        .select("staff_id")
+        .eq("treatment_id", treatment.id);
+      staffIds = (links ?? []).map((l) => l.staff_id).filter(Boolean) as string[];
+      if (staffIds.length === 0) {
+        const { data: anyStaff } = await db
+          .from("staff")
+          .select("id")
+          .eq("branch_id", treatment.branch_id)
+          .eq("is_active", true);
+        staffIds = (anyStaff ?? []).map((s) => s.id);
+      }
+    }
+    // No known staff → can't compute safely; let the submit guard handle it.
+    if (staffIds.length === 0) return [];
+
+    const dayStart = new Date(`${input.date}T00:00:00${SL_OFFSET}`).toISOString();
+    const dayEnd = new Date(`${input.date}T23:59:59${SL_OFFSET}`).toISOString();
+
+    const { data: bookings } = await db
+      .from("bookings")
+      .select("staff_id, starts_at, ends_at")
+      .in("staff_id", staffIds)
+      .in("status", ["requested", "confirmed", "reschedule_proposed"])
+      .gte("starts_at", dayStart)
+      .lte("starts_at", dayEnd);
+
+    const busy = (bookings ?? []).map((b) => ({
+      staffId: b.staff_id as string,
+      start: new Date(b.starts_at).getTime(),
+      end: new Date(b.ends_at).getTime(),
+    }));
+
+    const cutoff = Date.now() + leadMs;
+    const taken: string[] = [];
+
+    for (const slot of TIME_SLOTS) {
+      const [h, m] = slot.split(":").map(Number);
+      const start = new Date(
+        `${input.date}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00${SL_OFFSET}`,
+      ).getTime();
+      const end = start + duration * 60000;
+
+      if (start < cutoff) {
+        taken.push(slot);
+        continue;
+      }
+      // Slot is free if at least one candidate specialist has no overlap.
+      const someoneFree = staffIds.some(
+        (sid) => !busy.some((b) => b.staffId === sid && b.start < end && b.end > start),
+      );
+      if (!someoneFree) taken.push(slot);
+    }
+
+    return taken;
+  } catch {
+    return [];
+  }
 }
 
 export async function submitBooking(raw: BookingInput): Promise<BookingResult> {

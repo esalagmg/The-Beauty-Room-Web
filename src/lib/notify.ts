@@ -9,6 +9,15 @@ import "server-only";
  */
 const FROM = process.env.EMAIL_FROM || "The Beauty Room <onboarding@resend.dev>";
 
+/** Escape user-supplied text before interpolating it into email HTML. */
+function esc(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 /**
  * Owner notifications. Phase 1 = free channels:
  *  • Email via Resend (if RESEND_API_KEY set)
@@ -33,13 +42,13 @@ async function sendEmail(alert: OwnerBookingAlert) {
   if (!key || !to) return;
 
   const html = `
-    <h2>New booking request — ${alert.reference}</h2>
-    <p><strong>${alert.customerName}</strong> (${alert.phone})</p>
+    <h2>New booking request — ${esc(alert.reference)}</h2>
+    <p><strong>${esc(alert.customerName)}</strong> (${esc(alert.phone)})</p>
     <ul>
-      <li><strong>Treatment:</strong> ${alert.treatment} (${alert.division})</li>
-      <li><strong>When:</strong> ${alert.when}</li>
-      <li><strong>Specialist:</strong> ${alert.specialist ?? "Any"}</li>
-      ${alert.notes ? `<li><strong>Notes:</strong> ${alert.notes}</li>` : ""}
+      <li><strong>Treatment:</strong> ${esc(alert.treatment)} (${esc(alert.division)})</li>
+      <li><strong>When:</strong> ${esc(alert.when)}</li>
+      <li><strong>Specialist:</strong> ${esc(alert.specialist ?? "Any")}</li>
+      ${alert.notes ? `<li><strong>Notes:</strong> ${esc(alert.notes)}</li>` : ""}
     </ul>
     <p>Open the admin panel to accept, reschedule or decline.</p>`;
 
@@ -105,7 +114,7 @@ export async function notifyOwnerMessage(subject: string, body: string) {
           from: FROM,
           to: [to],
           subject,
-          html: `<p>${body}</p>`,
+          html: `<p>${esc(body).replace(/\n/g, "<br>")}</p>`,
         }),
       }).catch(() => undefined),
     );
@@ -144,9 +153,10 @@ export async function sendCustomerEmail(i: CustomerEmailInput) {
 
   const confirmed = i.kind === "confirmed";
   const heading = confirmed ? "You’re confirmed" : "Request received";
+  const name = esc(i.name);
   const intro = confirmed
-    ? `We’re delighted to confirm your appointment, ${i.name}. We can’t wait to welcome you.`
-    : `Thank you, ${i.name}. We’ve received your booking request and will confirm shortly — usually within a few hours.`;
+    ? `We’re delighted to confirm your appointment, ${name}. We can’t wait to welcome you.`
+    : `Thank you, ${name}. We’ve received your booking request and will confirm shortly — usually within a few hours.`;
 
   const html = `
   <div style="background:#F7F3EC;padding:32px 0;font-family:Georgia,'Times New Roman',serif;color:#2B2824;">
@@ -162,9 +172,9 @@ export async function sendCustomerEmail(i: CustomerEmailInput) {
             <p style="font-size:17px;line-height:1.6;margin:14px 0 22px;color:#3A362F;">${intro}</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F3EC;border-radius:16px;">
               <tr><td style="padding:18px 22px;">
-                ${row("Treatment", i.treatment)}
-                ${row("When", i.when)}
-                ${row("Reference", i.reference)}
+                ${row("Treatment", esc(i.treatment))}
+                ${row("When", esc(i.when))}
+                ${row("Reference", esc(i.reference))}
               </td></tr>
             </table>
             ${

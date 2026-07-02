@@ -77,6 +77,15 @@
     @apply font-serif;
     text-wrap: balance;
   }
+
+  /* Visible keyboard focus everywhere — bespoke buttons/links rarely set
+     their own ring, so this is the WCAG safety net. Mouse/touch users are
+     unaffected (:focus-visible only matches keyboard-initiated focus). */
+  :focus-visible {
+    outline: 2px solid #B08A5B;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
 }
 
 @layer components {

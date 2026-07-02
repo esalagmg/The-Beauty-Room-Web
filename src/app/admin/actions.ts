@@ -3,8 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { isAllowedAdmin } from "@/lib/admin-access";
 import { sendCustomerEmail } from "@/lib/notify";
 import { siteConfig } from "@/constants/site";
+
+/**
+ * Session-scoped client, returned only for allowlisted admins. Server actions
+ * are directly invokable POST endpoints, so each mutation re-checks the
+ * ADMIN_EMAILS allowlist rather than trusting the layout/middleware guard
+ * (RLS still applies underneath as the final backstop).
+ */
+async function requireAdminDb() {
+  const supabase = await createServerSupabase();
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getUser();
+  if (!data.user || !isAllowedAdmin(data.user.email)) return null;
+  return supabase;
+}
 
 function slugify(s: string) {
   return s
@@ -32,7 +47,7 @@ export async function signOut() {
 }
 
 export async function upsertTreatment(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
 
   const id = (formData.get("id") as string) || null;
@@ -76,7 +91,7 @@ export async function upsertTreatment(formData: FormData) {
 }
 
 export async function deleteTreatment(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
   const id = formData.get("id") as string;
   await supabase.from("treatments").delete().eq("id", id);
@@ -85,7 +100,7 @@ export async function deleteTreatment(formData: FormData) {
 }
 
 export async function toggleTreatmentActive(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
   const id = formData.get("id") as string;
   const active = formData.get("active") === "true";
@@ -97,7 +112,7 @@ export async function toggleTreatmentActive(formData: FormData) {
 /* ── Staff / specialists ─────────────────────────────────────────── */
 
 export async function upsertStaff(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
 
   const id = (formData.get("id") as string) || null;
@@ -139,7 +154,7 @@ export async function upsertStaff(formData: FormData) {
 }
 
 export async function deleteStaff(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
   const id = formData.get("id") as string;
   await supabase.from("staff").delete().eq("id", id);
@@ -148,7 +163,7 @@ export async function deleteStaff(formData: FormData) {
 }
 
 export async function toggleStaffActive(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
   const id = formData.get("id") as string;
   const active = formData.get("active") === "true";
@@ -158,7 +173,7 @@ export async function toggleStaffActive(formData: FormData) {
 }
 
 export async function upsertCategory(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
 
   const id = (formData.get("id") as string) || null;
@@ -201,7 +216,7 @@ function toRange(date: string, time: string, durationMin: number) {
 
 /** Owner proposes a new date/time; generates a customer confirmation token. */
 export async function proposeReschedule(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
 
   const id = formData.get("id") as string;
@@ -261,12 +276,24 @@ export async function proposeReschedule(formData: FormData) {
 }
 
 export async function updateBooking(formData: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdminDb();
   if (!supabase) return;
 
   const id = formData.get("id") as string;
   const status = formData.get("status") as string;
   const message = (formData.get("message") as string) || null;
+
+  const VALID_STATUSES = [
+    "requested",
+    "confirmed",
+    "reschedule_proposed",
+    "customer_requested_change",
+    "declined",
+    "completed",
+    "cancelled",
+    "no_show",
+  ];
+  if (!id || !VALID_STATUSES.includes(status)) return;
 
   const { data: current } = await supabase
     .from("bookings")

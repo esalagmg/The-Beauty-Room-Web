@@ -15,11 +15,17 @@ import { MobileBookingBar } from "@/components/layout/mobile-booking-bar";
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <a
+        href="#main"
+        className="fixed left-4 top-4 z-[10001] -translate-y-24 rounded-full bg-graphite px-6 py-3 font-sans text-[0.72rem] uppercase tracking-luxe text-cream transition-transform focus:translate-y-0"
+      >
+        Skip to content
+      </a>
       <LuxuryLoader />
       <CustomCursor />
       <SmoothScrollProvider>
         <Navbar />
-        <main>{children}</main>
+        <main id="main">{children}</main>
         <Footer />
         <MobileBookingBar />
       </SmoothScrollProvider>

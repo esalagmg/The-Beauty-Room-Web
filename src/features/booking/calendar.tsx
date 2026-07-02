@@ -12,7 +12,12 @@ const MONTHS = [
 ];
 
 function toISO(d: Date) {
-  return d.toISOString().split("T")[0];
+  // Format the LOCAL date — toISOString() converts to UTC, which shifts the
+  // day backwards for every user east of Greenwich (e.g. Sri Lanka, +05:30).
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 /** A refined month calendar. Past dates are disabled; selection is ISO (YYYY-MM-DD). */
@@ -91,8 +96,16 @@ export function Calendar({
           return (
             <button
               key={i}
+              type="button"
               disabled={isPast}
               onClick={() => onChange(iso)}
+              aria-label={date.toLocaleDateString("en-GB", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+              aria-pressed={isSelected}
               className={cn(
                 "relative flex h-11 items-center justify-center rounded-full font-sans text-sm transition-all duration-300",
                 isPast && "cursor-not-allowed text-stone/60",
@@ -119,7 +132,4 @@ export function Calendar({
   );
 }
 
-export const TIME_SLOTS = [
-  "9:00", "10:00", "11:00", "12:00",
-  "13:30", "14:30", "15:30", "16:30", "17:30", "18:30",
-];
+export { TIME_SLOTS } from "./slots";

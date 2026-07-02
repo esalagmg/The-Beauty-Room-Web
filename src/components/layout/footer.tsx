@@ -42,8 +42,9 @@ export function Footer() {
                 <a
                   key={label}
                   href={href}
-                  target="_blank"
-                  rel="noreferrer"
+                  {...(href.startsWith("http")
+                    ? { target: "_blank", rel: "noreferrer" }
+                    : {})}
                   aria-label={label}
                   className="flex h-11 w-11 items-center justify-center rounded-full border border-cream/15 text-cream/70 transition-all duration-500 hover:border-gold hover:text-gold-soft"
                 >
@@ -108,7 +109,7 @@ export function Footer() {
         <div className="hairline mt-16" />
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 text-[0.7rem] uppercase tracking-wide2 text-cream/40 md:flex-row">
-          <span>© 1998 The Beauty Room by Nilu</span>
+          <span>© 1998–{new Date().getFullYear()} The Beauty Room by Nilu</span>
           <span>
             Website Crafted by{" "}
             <a

@@ -8,7 +8,11 @@ import { Cormorant_Garamond, Inter } from "next/font/google";
 export const serif = Cormorant_Garamond({
   subsets: ["latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  // Only the weights actually used (light/regular/medium), but with the TRUE
+  // italics — the brand's signature italic accents would otherwise render as
+  // a browser-synthesized oblique, not Cormorant's drawn italic.
+  weight: ["300", "400", "500"],
+  style: ["normal", "italic"],
   variable: "--font-serif",
 });
 
